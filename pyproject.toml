@@ -31,3 +31,28 @@ factory-boy = "^3.3.3"
 freezegun = "^1.5.3"
 testcontainers = "^4.12.0"
 
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+preview = true
+select = ['I', 'F', 'E', 'W', 'PL', 'PT', 'FAST']
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
+
+[tool.pytest.ini_options]
+pythonpath = "."
+addopts = '-p no:warnings'
+asyncio_default_fixture_loop_scope = 'function' # aparentemente temporario
+
+[tool.taskipy.tasks]
+pre_fmt = 'ruff check --fix'
+fmt = 'ruff format'
+run = 'fastapi dev gw_team/app.py'
+pre_tst = 'task format'
+tst = 'pytest -s -x --cov=gw_team --cov-config=.coveragerc -vv'
+post_tst = 'coverage html'
+
+[tool.taskipy]
