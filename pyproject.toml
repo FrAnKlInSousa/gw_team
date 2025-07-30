@@ -14,7 +14,8 @@ dependencies = [
     "alembic (>=1.16.4,<2.0.0)",
     "pyjwt (>=2.10.1,<3.0.0)",
     "tzdata (>=2025.2,<2026.0)",
-    "psycopg[binary] (>=3.2.9,<4.0.0)"
+    "psycopg[binary] (>=3.2.9,<4.0.0)",
+    "pwdlib[argon2] (>=0.2.1,<0.3.0)"
 ]
 
 
@@ -33,6 +34,7 @@ testcontainers = "^4.12.0"
 
 [tool.ruff]
 line-length = 79
+extend-exclude = ['migrations']
 
 [tool.ruff.lint]
 preview = true
@@ -48,11 +50,8 @@ addopts = '-p no:warnings'
 asyncio_default_fixture_loop_scope = 'function' # aparentemente temporario
 
 [tool.taskipy.tasks]
-pre_fmt = 'ruff check --fix'
 fmt = 'ruff format'
 run = 'fastapi dev gw_team/app.py'
-pre_tst = 'task format'
+pre_tst = 'task fmt'
 tst = 'pytest -s -x --cov=gw_team --cov-config=.coveragerc -vv'
 post_tst = 'coverage html'
-
-[tool.taskipy]
