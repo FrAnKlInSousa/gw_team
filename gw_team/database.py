@@ -1,5 +1,5 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
 from gw_team.settings import Settings
 

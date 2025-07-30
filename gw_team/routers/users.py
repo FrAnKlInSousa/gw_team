@@ -1,13 +1,14 @@
 from http import HTTPStatus
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
-from gw_team.database import db_session
 from sqlalchemy.orm import Session
-from gw_team.security import hash_password
+
+from gw_team.database import db_session
 from gw_team.models.users import User
-from gw_team.schemas.users import UserSchema, UserPublic
-from typing import Annotated
+from gw_team.schemas.users import UserPublic, UserSchema
+from gw_team.security import hash_password
 
 router = APIRouter(prefix='/users', tags=['usuarios'])
 

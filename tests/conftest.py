@@ -1,13 +1,12 @@
 import factory
 import pytest
-from factory import Factory
-from sqlalchemy import create_engine, StaticPool
-from sqlalchemy.orm import Session
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+
 from gw_team.app import app
 from gw_team.database import db_session
 from gw_team.models.users import User, table_registry
-from testcontainers.postgres import PostgresContainer
 from gw_team.security import hash_password
 from gw_team.settings import Settings
 

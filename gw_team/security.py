@@ -1,11 +1,11 @@
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from pwdlib import PasswordHash
 from fastapi.security import OAuth2PasswordBearer
-from gw_team.settings import Settings
-from datetime import datetime, timedelta
 from jwt import encode
+from pwdlib import PasswordHash
 
+from gw_team.settings import Settings
 
 pwd_context = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')

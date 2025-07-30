@@ -35,6 +35,7 @@ testcontainers = "^4.12.0"
 [tool.ruff]
 line-length = 79
 extend-exclude = ['migrations']
+fix = true
 
 [tool.ruff.lint]
 preview = true
@@ -50,6 +51,7 @@ addopts = '-p no:warnings'
 asyncio_default_fixture_loop_scope = 'function' # aparentemente temporario
 
 [tool.taskipy.tasks]
+pre_fmt = 'ruff check'
 fmt = 'ruff format'
 run = 'fastapi dev gw_team/app.py'
 pre_tst = 'task fmt'
