@@ -1,5 +1,5 @@
 services:
-  fastzero_database:
+  gw_database:
     image: postgres
     environment:
       POSTGRES_USER: app_user
@@ -10,15 +10,15 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  fastzero_app:
-    image: fastzero_app
+  gw_app:
+    image: gw_team
     build: .
     entrypoint: ./entrypoint.sh
     ports:
       - "8000:8000"
     depends_on:
-      - fastzero_database
+      - gw_database
     environment:
-      DATABASE_URL: postgresql+psycopg://app_user:app_password@fastzero_database:5432/app_db
+      DATABASE_URL: postgresql+psycopg://app_user:app_password@gw_database:5432/app_db
 volumes:
   pgdata:
