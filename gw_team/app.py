@@ -11,5 +11,5 @@ app.include_router(users.router)
 
 
 @app.get('/', response_model=HealthCheck, tags=['health'])
-def health_check():
+async def health_check():
     return {'status': HTTPStatus.OK}

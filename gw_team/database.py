@@ -1,11 +1,10 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from gw_team.settings import Settings
 
-engine = create_engine(Settings().DATABASE_URL)
+engine = create_async_engine(Settings().DATABASE_URL)
 
 
-def db_session():  # pragma: no cover
-    with Session(engine, expire_on_commit=False) as session:
+async def db_session():  # pragma: no cover
+    async with AsyncSession(engine, expire_on_commit=False) as session:
         yield session

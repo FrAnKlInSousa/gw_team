@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from gw_team.database import db_session
 from gw_team.models.users import User
@@ -12,29 +12,34 @@ from gw_team.security import hash_password
 
 router = APIRouter(prefix='/users', tags=['usuarios'])
 
-T_Session = Annotated[Session, Depends(db_session)]
+T_Session = Annotated[AsyncSession, Depends(db_session)]
 
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create(user: UserSchema, session: T_Session):
-    user_db = session.scalar(select(User).where(User.email == user.email))
+async def create_user(user: UserSchema, session: T_Session):
+    user_db = await session.scalar(
+        select(User).where(User.email == user.email)
+    )
     if user_db:
-        ...
-    user = User(
+        if user_db.email == user.email:
+            raise HTTPException(
+                status_code=HTTPStatus.CONFLICT, detail='email já existe.'
+            )
+    db_user = User(
         name=user.name,
-        last_name=user.last_name,
         email=user.email,
         password=hash_password(user.password),
+        last_name=user.last_name,
     )
-    session.add(user)
-    session.commit()
-    session.refresh(user)
-    return user
+    session.add(db_user)
+    await session.commit()
+    await session.refresh(db_user)
+    return db_user
 
 
 @router.get('/{user_id}', response_model=UserPublic)
-def read_user(user_id: int, session: T_Session):
-    user_db = session.scalar(select(User).where(User.id == user_id))
+async def read_user(user_id: int, session: T_Session):
+    user_db = await session.scalar(select(User).where(User.id == user_id))
     if not user_db:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
