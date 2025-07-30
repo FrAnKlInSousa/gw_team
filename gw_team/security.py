@@ -1,0 +1,35 @@
+from zoneinfo import ZoneInfo
+
+from pwdlib import PasswordHash
+from fastapi.security import OAuth2PasswordBearer
+from gw_team.settings import Settings
+from datetime import datetime, timedelta
+from jwt import encode
+
+
+pwd_context = PasswordHash.recommended()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
+settings = Settings()
+
+
+def hash_password(password: str):
+    return pwd_context.hash(password)
+
+
+def is_valid_password(password: str, hashed_password: str):
+    return pwd_context.verify(password=password, hash=hashed_password)
+
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+
+    expire = datetime.now(tz=ZoneInfo('UTC')) + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+
+    to_encode.update({'exp': expire})
+    encoded_jwt = encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
+
+    return encoded_jwt
