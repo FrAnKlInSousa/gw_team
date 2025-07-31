@@ -105,5 +105,7 @@ class UserFactory(factory.Factory):
 
     name = factory.Sequence(lambda n: f'test{n}')
     last_name = factory.Sequence(lambda n: f'last_name{n}')
-    email = factory.LazyAttribute(lambda obj: f'{obj.name}@test.com')
+    email = factory.LazyAttribute(
+        lambda obj: f'{obj.name}{obj.last_name}@test.com'
+    )
     password = factory.LazyAttribute(lambda obj: f'{obj.name}#secret')

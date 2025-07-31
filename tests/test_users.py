@@ -1,5 +1,9 @@
 from http import HTTPStatus
 
+import pytest
+
+from tests.conftest import UserFactory
+
 
 def test_read_user(client, user):
     response = client.get(f'/users/{user.id}')
@@ -63,3 +67,15 @@ def test_read_users_empty(client):
     response = client.get('/users/')
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'users': []}
+
+
+@pytest.mark.asyncio
+async def test_filter_users_should_return_3(client, session):
+    expected_len = 3
+    session.add_all(UserFactory.create_batch(5, name='Carla'))
+    session.add_all(UserFactory.create_batch(3, name='Sabrina'))
+    await session.commit()
+
+    response = client.get('/users/?name=Sab')
+    assert response.status_code == HTTPStatus.OK
+    assert len(response.json()['users']) == expected_len
