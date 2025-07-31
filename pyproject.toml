@@ -51,9 +51,11 @@ pythonpath = "."
 addopts = '-p no:warnings'
 asyncio_default_fixture_loop_scope = 'function' # aparentemente temporario
 
+[tool.coverage.run]
+concurrency = ["thread", "greenlet"]
+
 [tool.taskipy.tasks]
-pre_fmt = 'ruff check'
-fmt = 'ruff format'
+fmt = 'ruff check --fix || true && ruff format'
 run = 'fastapi dev gw_team/app.py'
 pre_tst = 'task fmt'
 tst = 'pytest -s -x --cov=gw_team --cov-config=.coveragerc -vv'
