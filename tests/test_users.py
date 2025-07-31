@@ -45,3 +45,21 @@ def test_create_user_with_existing_email(client, user):
     }
     response = client.post('/users/', json=payload)
     assert response.status_code == HTTPStatus.CONFLICT
+
+
+def test_read_users(client, user):
+    created_user = {
+        'name': user.name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'id': user.id,
+    }
+    response = client.get('/users/')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': [created_user]}
+
+
+def test_read_users_empty(client):
+    response = client.get('/users/')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': []}
