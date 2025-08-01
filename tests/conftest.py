@@ -11,7 +11,7 @@ from testcontainers.postgres import PostgresContainer
 
 from gw_team.app import app
 from gw_team.database import db_session
-from gw_team.models.users import User, table_registry
+from gw_team.models.users import User, UserType, table_registry
 from gw_team.security import hash_password
 from gw_team.settings import Settings
 
@@ -85,11 +85,36 @@ async def other_user(session: AsyncSession) -> User:
     return new_user
 
 
+@pytest_asyncio.fixture
+async def user_admin(session: AsyncSession) -> User:
+    password = 'secret'
+    new_user = UserFactory(
+        password=hash_password(password), user_type=UserType.admin
+    )
+    session.add(new_user)
+    await session.commit()
+    await session.refresh(new_user)
+    new_user.clean_password = password
+    return new_user
+
+
 @pytest.fixture
 def token(client, user):
     response = client.post(
         '/auth/token',
         data={'username': user.email, 'password': user.clean_password},
+    )
+    return response.json()['access_token']
+
+
+@pytest.fixture
+def token_admin(client, user_admin):
+    response = client.post(
+        '/auth/token',
+        data={
+            'username': user_admin.email,
+            'password': user_admin.clean_password,
+        },
     )
     return response.json()['access_token']
 
@@ -109,3 +134,4 @@ class UserFactory(factory.Factory):
         lambda obj: f'{obj.name}{obj.last_name}@test.com'
     )
     password = factory.LazyAttribute(lambda obj: f'{obj.name}#secret')
+    user_type = UserType.client
