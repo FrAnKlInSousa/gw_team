@@ -1,9 +1,14 @@
 from datetime import datetime
+from enum import Enum
 
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column, registry
 
 table_registry = registry()
+
+class UserType(str, Enum):
+    admin = 'admin'
+    student = 'client'
 
 
 @table_registry.mapped_as_dataclass
@@ -21,3 +26,4 @@ class User:
     email: Mapped[str] = mapped_column(unique=True)
     last_name: Mapped[str]
     password: Mapped[str]
+    user_type: Mapped[UserType]
