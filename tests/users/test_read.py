@@ -49,3 +49,10 @@ async def test_filter_users_should_return_3(client, session, token_admin):
     )
     assert response.status_code == HTTPStatus.OK
     assert len(response.json()['users']) == expected_len
+
+
+def test_read_users_with_client_user_should_return_error(client, token):
+    response = client.get(
+        '/users/', headers={'Authorization': f'Bearer {token}'}
+    )
+    assert response.status_code == HTTPStatus.FORBIDDEN
