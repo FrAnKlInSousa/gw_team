@@ -41,7 +41,7 @@ def create_token(data: dict):
     return encoded_jwt
 
 
-def current_user(
+async def current_user(
     token: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(db_session),
 ):
@@ -59,7 +59,9 @@ def current_user(
             raise credential_exception
     except DecodeError:
         raise credential_exception
-    user_db = session.scalar(select(User).where(User.email == subject_email))
+    user_db = await session.scalar(
+        select(User).where(User.email == subject_email)
+    )
     if not user_db:
         raise credential_exception
     return user_db
