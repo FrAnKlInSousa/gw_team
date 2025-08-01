@@ -61,4 +61,3 @@ async def read_users(
         query.limit(filter_users.limit).offset(filter_users.page)
     )
     return {'users': users.all()}
-
