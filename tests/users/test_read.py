@@ -56,3 +56,18 @@ def test_read_users_with_client_user_should_return_error(client, token):
         '/users/', headers={'Authorization': f'Bearer {token}'}
     )
     assert response.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_read_user_error_with_different_id(client, other_user, token):
+    response = client.get(
+        f'/users/{other_user.id}', headers={'Authorization': f'Bearer {token}'}
+    )
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_read_user_with_different_id_by_admin(client, other_user, token_admin):
+    response = client.get(
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token_admin}'},
+    )
+    assert response.status_code == HTTPStatus.OK
