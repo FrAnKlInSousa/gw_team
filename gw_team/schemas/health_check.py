@@ -1,5 +1,7 @@
+from http import HTTPStatus
+
 from pydantic import BaseModel
 
 
 class HealthCheck(BaseModel):
-    status: str = 'OK'
+    status: int = HTTPStatus.OK
