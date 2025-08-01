@@ -64,7 +64,7 @@ def mock_db_time():
 
 
 @pytest_asyncio.fixture
-async def user(session: AsyncSession):
+async def user(session: AsyncSession) -> User:
     password = 'secret'
     new_user = UserFactory(password=hash_password(password))
     session.add(new_user)
@@ -75,7 +75,7 @@ async def user(session: AsyncSession):
 
 
 @pytest_asyncio.fixture
-async def other_user(session: AsyncSession):
+async def other_user(session: AsyncSession) -> User:
     password = 'secret'
     new_user = UserFactory(password=hash_password(password))
     session.add(new_user)
@@ -89,7 +89,7 @@ async def other_user(session: AsyncSession):
 def token(client, user):
     response = client.post(
         '/auth/token',
-        data={'email': user.email, 'password': user.clean_password},
+        data={'username': user.email, 'password': user.clean_password},
     )
     return response.json()['access_token']
 
