@@ -9,12 +9,13 @@ from gw_team.database import db_session
 from gw_team.models.users import User
 from gw_team.schemas.filters import FilterUser
 from gw_team.schemas.users import UserList, UserPublic, UserSchema
-from gw_team.security import hash_password
+from gw_team.security import current_user, hash_password
 
 router = APIRouter(prefix='/users', tags=['usuarios'])
 
 T_Session = Annotated[AsyncSession, Depends(db_session)]
 T_Filter = Annotated[FilterUser, Query()]
+T_CurrentUser = Annotated[User, Depends(current_user)]
 
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
@@ -32,6 +33,7 @@ async def create_user(user: UserSchema, session: T_Session):
         email=user.email,
         password=hash_password(user.password),
         last_name=user.last_name,
+        user_type=user.user_type,
     )
     session.add(db_user)
     await session.commit()
@@ -40,7 +42,11 @@ async def create_user(user: UserSchema, session: T_Session):
 
 
 @router.get('/{user_id}', response_model=UserPublic)
-async def read_user(user_id: int, session: T_Session):
+async def read_user(user_id: int, session: T_Session, user: T_CurrentUser):
+    if user.id != user_id and user.user_type != 'admin':
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN, detail='You have no permission'
+        )
     user_db = await session.scalar(select(User).where(User.id == user_id))
     if not user_db:
         raise HTTPException(
@@ -51,9 +57,12 @@ async def read_user(user_id: int, session: T_Session):
 
 @router.get('/', status_code=HTTPStatus.OK, response_model=UserList)
 async def read_users(
-    session: T_Session,
-    filter_users: T_Filter,
+    session: T_Session, filter_users: T_Filter, user: T_CurrentUser
 ):
+    if user.user_type != 'admin':
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN, detail='You have no permission'
+        )
     query = select(User)
     if filter_users.name:
         query = query.filter(User.name.contains(filter_users.name))
