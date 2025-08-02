@@ -21,3 +21,10 @@ class UserSchema(User):
 
 class UserList(BaseModel):
     users: list[UserPublic]
+
+
+class UpdateUser(BaseModel):
+    name: str | None = None
+    last_name: str | None = None
+    email: EmailStr | None = None
+    user_type: UserType | None = None
