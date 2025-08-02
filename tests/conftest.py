@@ -108,6 +108,16 @@ def token(client, user):
 
 
 @pytest.fixture
+def header_client(token):
+    return {'Authorization': f'Bearer {token}'}
+
+
+@pytest.fixture
+def header_admin(token_admin):
+    return {'Authorization': f'Bearer {token_admin}'}
+
+
+@pytest.fixture
 def token_admin(client, user_admin):
     response = client.post(
         '/auth/token',
