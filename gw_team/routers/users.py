@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from gw_team.database import db_session
 from gw_team.models.users import User
 from gw_team.schemas.filters import FilterUser
-from gw_team.schemas.users import UserList, UserPublic, UserSchema
+from gw_team.schemas.users import UpdateUser, UserList, UserPublic, UserSchema
 from gw_team.security import current_user, hash_password
 
-router = APIRouter(prefix='/users', tags=['usuarios'])
+router = APIRouter(prefix='/users', tags=['usuários'])
 
 T_Session = Annotated[AsyncSession, Depends(db_session)]
 T_Filter = Annotated[FilterUser, Query()]
@@ -70,3 +70,31 @@ async def read_users(
         query.limit(filter_users.limit).offset(filter_users.page)
     )
     return {'users': users.all()}
+
+
+@router.patch('/{user_id}', response_model=UserPublic)
+async def update(
+    user_id: int,
+    auth_user: T_CurrentUser,
+    session: T_Session,
+    user: UpdateUser,
+):
+    # todo permite mudar email? apenas admin? melhor nao.. pensar sobre
+    if auth_user.user_type != 'admin' and user_id != auth_user.id:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail='You have no permission',
+        )
+    user_db = await session.scalar(select(User).where(User.id == user_id))
+    if not user_db:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
+        )
+
+    for key, value in user.model_dump(exclude_unset=True).items():
+        setattr(user_db, key, value)
+
+    session.add(user_db)
+    await session.commit()
+    await session.refresh(user_db)
+    return user_db
