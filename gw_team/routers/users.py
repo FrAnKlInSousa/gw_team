@@ -132,3 +132,18 @@ async def update_password(
     await session.commit()
     await session.refresh(user_db)
     return {'message': 'Password changed successfully'}
+
+
+@router.delete('/{user_id}', response_model=Message)
+async def delete_user(user_id: int, user: T_CurrentUser, session: T_Session):
+    if user.id != user_id and user.user_type != 'admin':
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail='You have no permission',
+        )
+    user_db = await session.scalar(select(User).where(User.id == user_id))
+    if not user_db:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
+        )
+    user_db.disabled = True
