@@ -2,14 +2,13 @@ import asyncio
 from logging.config import fileConfig
 
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
 from gw_team.settings import Settings
-from sqlalchemy.orm import registry
+from gw_team.models import table_registry
+import gw_team.models.users
 
-table_registry = registry()
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -87,4 +86,4 @@ def run_migrations_online() -> None:
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online() 
+    run_migrations_online()
