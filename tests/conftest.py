@@ -86,6 +86,21 @@ async def other_user(session: AsyncSession) -> User:
 
 
 @pytest_asyncio.fixture
+async def custom_user(session: AsyncSession):
+    async def create_user(**kwargs) -> User:
+        new_user = UserFactory(**kwargs)
+        password = new_user.password
+        new_user.password = hash_password(password)
+        session.add(new_user)
+        await session.commit()
+        await session.refresh(new_user)
+        new_user.clean_password = password
+        return new_user
+
+    return create_user
+
+
+@pytest_asyncio.fixture
 async def user_admin(session: AsyncSession) -> User:
     password = 'secret'
     new_user = UserFactory(
