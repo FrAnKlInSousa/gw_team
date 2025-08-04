@@ -147,3 +147,6 @@ async def delete_user(user_id: int, user: T_CurrentUser, session: T_Session):
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
     user_db.disabled = True
+    session.add(user_db)
+    await session.commit()
+    return Message(message='User successfully deleted')
