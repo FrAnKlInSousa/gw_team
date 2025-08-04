@@ -30,6 +30,11 @@ async def authenticate(
             status_code=HTTPStatus.UNAUTHORIZED,
             detail='Invalid email or password',
         )
+    if user_db.disabled:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail='User account is not active',
+        )
     valid_password = is_valid_password(
         password=form_data.password, hashed_password=user_db.password
     )
