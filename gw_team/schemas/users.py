@@ -28,3 +28,7 @@ class UpdateUser(BaseModel):
     last_name: str | None = None
     email: EmailStr | None = None
     user_type: UserType | None = None
+
+
+class UpdatePassword(BaseModel):
+    new_password: str
