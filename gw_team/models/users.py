@@ -2,9 +2,9 @@ from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import func
-from sqlalchemy.orm import Mapped, mapped_column, registry
+from sqlalchemy.orm import Mapped, mapped_column
 
-table_registry = registry()
+from gw_team.models import table_registry
 
 
 class UserType(str, Enum):
@@ -28,3 +28,4 @@ class User:
     last_name: Mapped[str]
     password: Mapped[str]
     user_type: Mapped[UserType]
+    disabled: Mapped[bool] = mapped_column(default=False)
