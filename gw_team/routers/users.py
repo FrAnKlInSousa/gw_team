@@ -8,7 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from gw_team.database import db_session
 from gw_team.models.users import User
 from gw_team.schemas.filters import FilterUser
-from gw_team.schemas.users import UpdateUser, UserList, UserPublic, UserSchema
+from gw_team.schemas.schemas import Message
+from gw_team.schemas.users import (
+    UpdatePassword,
+    UpdateUser,
+    UserList,
+    UserPublic,
+    UserSchema,
+)
 from gw_team.security import current_user, hash_password
 
 router = APIRouter(prefix='/users', tags=['usuários'])
@@ -77,7 +84,7 @@ async def update(
     user_id: int,
     auth_user: T_CurrentUser,
     session: T_Session,
-    user: UpdateUser,
+    data: UpdateUser,
 ):
     # todo permite mudar email? apenas admin? melhor nao.. pensar sobre
     if auth_user.user_type != 'admin' and user_id != auth_user.id:
@@ -91,10 +98,37 @@ async def update(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
 
-    for key, value in user.model_dump(exclude_unset=True).items():
+    for key, value in data.model_dump(exclude_unset=True).items():
         setattr(user_db, key, value)
 
     session.add(user_db)
     await session.commit()
     await session.refresh(user_db)
     return user_db
+
+
+@router.patch('/password/{user_id}', response_model=Message)
+async def update_password(
+    user_id: int,
+    auth_user: T_CurrentUser,
+    session: T_Session,
+    data: UpdatePassword,
+):
+    if auth_user.user_type != 'admin' and user_id != auth_user.id:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail='You have no permission',
+        )
+
+    user_db = await session.scalar(select(User).where(User.id == user_id))
+    if not user_db:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
+        )
+
+    user_db.password = hash_password(data.new_password)
+
+    session.add(user_db)
+    await session.commit()
+    await session.refresh(user_db)
+    return {'message': 'Password changed successfully'}
