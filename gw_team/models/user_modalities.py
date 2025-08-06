@@ -3,13 +3,13 @@ from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from gw_team.models import table_registry
-from gw_team.models.modalities import Modality
-from gw_team.models.users import User
+from gw_team.models.registry import table_registry
+
 
 
 @table_registry.mapped_as_dataclass
 class UserModality:
+
     __tablename__ = 'user_modalities'
 
     user_id: Mapped[int] = mapped_column(

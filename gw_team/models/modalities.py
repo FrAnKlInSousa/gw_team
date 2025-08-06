@@ -3,8 +3,7 @@ from typing import List
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from gw_team.models import table_registry
-from gw_team.models.user_modalities import UserModality
+from gw_team.models.registry import table_registry
 
 
 class FightStyle(str, Enum):

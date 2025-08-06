@@ -5,8 +5,7 @@ from typing import List
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from gw_team.models import table_registry
-from gw_team.models.user_modalities import UserModality
+from gw_team.models.registry import table_registry
 
 
 class UserType(str, Enum):
@@ -16,6 +15,7 @@ class UserType(str, Enum):
 
 @table_registry.mapped_as_dataclass
 class User:
+
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
@@ -30,7 +30,8 @@ class User:
     last_name: Mapped[str]
     password: Mapped[str]
     user_type: Mapped[UserType]
-    disabled: Mapped[bool] = mapped_column(default=False)
     modalities_assoc: Mapped[List['UserModality']] = relationship(
         back_populates='user', cascade='all, delete-orphan'
     )
+    disabled: Mapped[bool] = mapped_column(default=False)
+
