@@ -1,10 +1,13 @@
 from datetime import datetime
 from enum import Enum
+from typing import List
 
 from sqlalchemy import func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from gw_team.models import table_registry
+from gw_team.models.modalities import Modality
+from gw_team.models.user_modalities import UserModality
 
 
 class UserType(str, Enum):
@@ -29,3 +32,7 @@ class User:
     password: Mapped[str]
     user_type: Mapped[UserType]
     disabled: Mapped[bool] = mapped_column(default=False)
+    modalities_assoc: Mapped[List['UserModality']] = relationship(
+        back_populates='user',
+        cascade='all, delete-orphan'
+    )
