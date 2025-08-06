@@ -15,7 +15,6 @@ class UserType(str, Enum):
 
 @table_registry.mapped_as_dataclass
 class User:
-
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
@@ -30,8 +29,9 @@ class User:
     last_name: Mapped[str]
     password: Mapped[str]
     user_type: Mapped[UserType]
-    modalities_assoc: Mapped[List['UserModality']] = relationship(
-        back_populates='user', cascade='all, delete-orphan'
+    modalities_assoc: Mapped[List['UserModality']] = relationship(  # noqa: F821
+        back_populates='user',
+        cascade='all, delete-orphan',
+        default_factory=list,
     )
     disabled: Mapped[bool] = mapped_column(default=False)
-
