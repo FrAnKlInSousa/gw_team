@@ -6,7 +6,6 @@ from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from gw_team.models import table_registry
-from gw_team.models.modalities import Modality
 from gw_team.models.user_modalities import UserModality
 
 
@@ -33,6 +32,5 @@ class User:
     user_type: Mapped[UserType]
     disabled: Mapped[bool] = mapped_column(default=False)
     modalities_assoc: Mapped[List['UserModality']] = relationship(
-        back_populates='user',
-        cascade='all, delete-orphan'
+        back_populates='user', cascade='all, delete-orphan'
     )
