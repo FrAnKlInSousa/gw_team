@@ -6,8 +6,7 @@ from sqlalchemy import pool
 
 from alembic import context
 from gw_team.settings import Settings
-from gw_team.models import table_registry
-import gw_team.models.users
+from gw_team.models.registry import table_registry
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
