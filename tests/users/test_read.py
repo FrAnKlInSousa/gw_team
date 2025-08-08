@@ -17,7 +17,8 @@ def test_read_user(client, user, token):
         'last_name': user.last_name,
         'id': user.id,
         'email': user.email,
-        'user_type': user.user_type,
+        'user_type': user.user_type.value,
+        'modalities': [],
     }
 
 
