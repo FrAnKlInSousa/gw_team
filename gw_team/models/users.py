@@ -35,3 +35,7 @@ class User:
         default_factory=list,
     )
     disabled: Mapped[bool] = mapped_column(default=False)
+
+    @property
+    def modalities(self):
+        return [modality.name for modality in self.modalities_assoc]
