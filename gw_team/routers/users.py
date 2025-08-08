@@ -140,19 +140,37 @@ async def update(
             status_code=HTTPStatus.UNAUTHORIZED,
             detail='You have no permission',
         )
-    user_db = await session.scalar(select(User).where(User.id == user_id))
+    user_db = await session.scalar(
+        select(User)
+        .where(User.id == user_id)
+        .options(
+            selectinload(User.modalities_assoc).selectinload(
+                UserModality.modality
+            )
+        )
+    )
+
     if not user_db:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
-
-    for key, value in data.model_dump(exclude_unset=True).items():
+    update_data = data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
         setattr(user_db, key, value)
 
     session.add(user_db)
     await session.commit()
     await session.refresh(user_db)
-    return user_db
+    user_db = await session.scalar(
+        select(User)
+        .where(User.id == user_id)
+        .options(
+            selectinload(User.modalities_assoc).selectinload(
+                UserModality.modality
+            )
+        )
+    )
+    return UserPublic.model_validate(user_db)
 
 
 @router.patch('/password/{user_id}', response_model=Message)
