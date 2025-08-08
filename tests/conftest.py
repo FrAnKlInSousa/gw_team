@@ -18,7 +18,7 @@ from gw_team.settings import Settings
 
 
 @pytest.fixture
-def client(session, seed_modalities):
+def client(session, add_modalities_to_db):
     def get_session_override():
         return session
 
