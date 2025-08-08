@@ -27,6 +27,7 @@ class UserSchema(User):
 
 class UserList(BaseModel):
     users: list[UserPublic]
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UpdateUser(BaseModel):
