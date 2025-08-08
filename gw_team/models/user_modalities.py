@@ -11,11 +11,16 @@ class UserModality:
     __tablename__ = 'user_modalities'
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey('users.id', ondelete='CASCADE'), primary_key=True
+        ForeignKey('users.id', ondelete='CASCADE'),
+        init=False,
+        primary_key=True,
     )
     modality_id: Mapped[int] = mapped_column(
-        ForeignKey('modalities.id', ondelete='CASCADE'), primary_key=True
+        ForeignKey('modalities.id', ondelete='CASCADE'),
+        init=False,
+        primary_key=True,
     )
+
     start_date: Mapped[datetime]
     user: Mapped['User'] = relationship(back_populates='modalities_assoc')  # noqa: F821
     modality: Mapped['Modality'] = relationship(back_populates='users_assoc')  # noqa: F821
