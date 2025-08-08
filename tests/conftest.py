@@ -4,20 +4,21 @@ from datetime import datetime
 import factory.fuzzy
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
-from sqlalchemy import event
+from sqlalchemy import event, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from starlette.testclient import TestClient
 from testcontainers.postgres import PostgresContainer
 
 from gw_team.app import app
 from gw_team.database import db_session
+from gw_team.models.modalities import Modality
 from gw_team.models.users import User, UserType, table_registry
 from gw_team.security import hash_password
 from gw_team.settings import Settings
 
 
 @pytest.fixture
-def client(session):
+def client(session, seed_modalities):
     def get_session_override():
         return session
 
@@ -160,3 +161,15 @@ class UserFactory(factory.Factory):
     )
     password = factory.LazyAttribute(lambda obj: f'{obj.name}#secret')
     user_type = UserType.client
+
+
+@pytest_asyncio.fixture
+async def add_modalities_to_db(session: AsyncSession):
+    session.add_all([
+        Modality(name='capoeira'),
+        Modality(name='jiu-jitsu'),
+        Modality(name='muay-thai'),
+    ])
+    await session.commit()
+    result = await session.scalars(select(Modality))
+    return result.all()
