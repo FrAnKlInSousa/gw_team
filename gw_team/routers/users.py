@@ -1,11 +1,17 @@
+from datetime import datetime
 from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from gw_team.database import db_session
+from gw_team.models import Modality
+from gw_team.models.user_modalities import (
+    UserModality,
+)
 from gw_team.models.users import User
 from gw_team.schemas.filters import FilterUser
 from gw_team.schemas.schemas import Message
@@ -31,21 +37,52 @@ async def create_user(user: UserSchema, session: T_Session):
         select(User).where(User.email == user.email)
     )
     if user_db:
-        if user_db.email == user.email:
-            raise HTTPException(
-                status_code=HTTPStatus.CONFLICT, detail='email já existe.'
-            )
-    db_user = User(
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT, detail='email já existe.'
+        )
+
+    modalities_obj = await session.scalars(
+        select(Modality).where(Modality.name.in_(user.modalities))
+    )
+
+    modalities = modalities_obj.all()
+
+    user_db = User(
         name=user.name,
         email=user.email,
         password=hash_password(user.password),
         last_name=user.last_name,
         user_type=user.user_type,
     )
-    session.add(db_user)
+    for modality in modalities:
+        assoc = UserModality(
+            user=user_db,
+            modality=modality,
+            start_date=datetime.now(),
+        )
+        user_db.modalities_assoc.append(assoc)
+
+    session.add(user_db)
     await session.commit()
-    await session.refresh(db_user)
-    return db_user
+    await session.refresh(user_db)
+    await session.execute(
+        select(User)
+        .where(User.id == user_db.id)
+        .options(
+            selectinload(User.modalities_assoc).selectinload(
+                UserModality.modality
+            )
+        )
+    )
+
+    return UserPublic(
+        id=user_db.id,
+        name=user_db.name,
+        last_name=user_db.last_name,
+        email=user_db.email,
+        user_type=user_db.user_type,
+        modalities=[assoc.modality.name for assoc in user_db.modalities_assoc],
+    )
 
 
 @router.get('/{user_id}', response_model=UserPublic)
