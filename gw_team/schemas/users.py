@@ -8,10 +8,16 @@ class User(BaseModel):
     last_name: str
     email: EmailStr
     user_type: UserType
+    modalities: list[str]
 
 
-class UserPublic(User):
+class UserPublic(BaseModel):
     id: int
+    name: str
+    last_name: str
+    email: EmailStr
+    user_type: UserType
+    modalities: list[str]
     model_config = ConfigDict(from_attributes=True)
 
 
