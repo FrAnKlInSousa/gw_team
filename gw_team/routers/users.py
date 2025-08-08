@@ -91,12 +91,20 @@ async def read_user(user_id: int, session: T_Session, user: T_CurrentUser):
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN, detail='You have no permission'
         )
-    user_db = await session.scalar(select(User).where(User.id == user_id))
+    user_db = await session.scalar(
+        select(User)
+        .where(User.id == user_id)
+        .options(
+            selectinload(User.modalities_assoc).selectinload(
+                UserModality.modality
+            )
+        )
+    )
     if not user_db:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
-    return user_db
+    return UserPublic.model_validate(user_db)
 
 
 @router.get('/', status_code=HTTPStatus.OK, response_model=UserList)
@@ -107,13 +115,16 @@ async def read_users(
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN, detail='You have no permission'
         )
-    query = select(User)
+    query = select(User).options(
+        selectinload(User.modalities_assoc).selectinload(UserModality.modality)
+    )
     if filter_users.name:
         query = query.filter(User.name.contains(filter_users.name))
-    users = await session.scalars(
+    result = await session.scalars(
         query.limit(filter_users.limit).offset(filter_users.page)
     )
-    return {'users': users.all()}
+    users = result.all()
+    return UserList(users=[UserPublic.model_validate(user) for user in users])
 
 
 @router.patch('/{user_id}', response_model=UserPublic)
