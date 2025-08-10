@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from gw_team.models.users import UserType
 
@@ -17,8 +17,9 @@ class UserPublic(BaseModel):
     last_name: str
     email: EmailStr
     user_type: UserType
-    modalities: list[str]
-    model_config = ConfigDict(from_attributes=True)
+    modalities: list[str] = Field(alias='modality_names')
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class UserSchema(User):
