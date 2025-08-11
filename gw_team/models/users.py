@@ -38,4 +38,6 @@ class User:
 
     @property
     def modalities(self) -> list[str]:
-        return [assoc.modality.name for assoc in self.modalities_assoc]
+        return [
+            assoc.modality.modality_name for assoc in self.modalities_assoc
+        ]
