@@ -75,14 +75,7 @@ async def create_user(user: UserSchema, session: T_Session):
         )
     )
 
-    return UserPublic(
-        id=user_db.id,
-        name=user_db.name,
-        last_name=user_db.last_name,
-        email=user_db.email,
-        user_type=user_db.user_type,
-        modalities=[assoc.modality.name for assoc in user_db.modalities_assoc],
-    )
+    return UserPublic.model_validate(user_db)
 
 
 @router.get('/{user_id}', response_model=UserPublic)
@@ -186,7 +179,15 @@ async def update_password(
             detail='You have no permission',
         )
 
-    user_db = await session.scalar(select(User).where(User.id == user_id))
+    user_db = await session.scalar(
+        select(User)
+        .where(User.id == user_id)
+        .options(
+            selectinload(User.modalities_assoc).selectinload(
+                UserModality.modality
+            )
+        )
+    )
     if not user_db:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
@@ -196,8 +197,8 @@ async def update_password(
 
     session.add(user_db)
     await session.commit()
-    await session.refresh(user_db)
-    return {'message': 'Password changed successfully'}
+
+    return Message(message='Password changed successfully')
 
 
 @router.delete('/{user_id}', response_model=Message)
