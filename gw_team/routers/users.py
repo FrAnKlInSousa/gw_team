@@ -179,15 +179,7 @@ async def update_password(
             detail='You have no permission',
         )
 
-    user_db = await session.scalar(
-        select(User)
-        .where(User.id == user_id)
-        .options(
-            selectinload(User.modalities_assoc).selectinload(
-                UserModality.modality
-            )
-        )
-    )
+    user_db = await session.scalar(select(User).where(User.id == user_id))
     if not user_db:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
