@@ -37,5 +37,5 @@ class User:
     disabled: Mapped[bool] = mapped_column(default=False)
 
     @property
-    def modality_names(self) -> list[str]:
+    def modalities(self) -> list[str]:
         return [assoc.modality.name for assoc in self.modalities_assoc]
