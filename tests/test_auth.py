@@ -9,7 +9,7 @@ def test_authenticate(client, user):
         data={'username': user.email, 'password': user.clean_password},  # type: ignore[attr-defined]
     )
 
-    assert response.status_code == HTTPStatus.CREATED
+    assert response.status_code == HTTPStatus.OK
     assert 'access_token' in response.json()
     assert 'token_type' in response.json()
 

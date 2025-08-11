@@ -16,7 +16,7 @@ def test_update_password(client, user, header_client):
     response = client.post(
         '/auth/token', data={'username': user.email, 'password': 'new_pass'}
     )
-    assert response.status_code == HTTPStatus.CREATED
+    assert response.status_code == HTTPStatus.OK
 
     response = client.post(
         '/auth/token', data={'username': user.email, 'password': old_pass}

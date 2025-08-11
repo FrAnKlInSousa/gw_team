@@ -16,7 +16,7 @@ T_Session = Annotated[AsyncSession, Depends(db_session)]
 OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 
-@router.post('/token', status_code=HTTPStatus.CREATED, response_model=Token)
+@router.post('/token', status_code=HTTPStatus.OK, response_model=Token)
 async def authenticate(
     form_data: OAuth2Form,
     session: T_Session,
