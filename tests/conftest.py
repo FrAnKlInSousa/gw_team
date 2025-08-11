@@ -166,9 +166,9 @@ class UserFactory(factory.Factory):
 @pytest_asyncio.fixture
 async def add_modalities_to_db(session: AsyncSession):
     session.add_all([
-        Modality(name='capoeira'),
-        Modality(name='jiu-jitsu'),
-        Modality(name='muay-thai'),
+        Modality(modality_name='capoeira', period='diurno'),
+        Modality(modality_name='jiu-jitsu'),
+        Modality(modality_name='muay-thai', period='diurno'),
     ])
     await session.commit()
     result = await session.scalars(select(Modality))
