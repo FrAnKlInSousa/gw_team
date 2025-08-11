@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+from gw_team.schemas.users import UserPublic
+
 
 def test_create_user(client):
     payload = {
@@ -18,7 +20,7 @@ def test_create_user(client):
     payload.update({'id': 1})
 
     assert response.status_code == HTTPStatus.CREATED
-    assert response.json() == payload
+    assert response.json() == UserPublic.model_validate(payload).model_dump()
 
 
 def test_create_user_with_modalities(client):
