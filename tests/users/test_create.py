@@ -30,7 +30,7 @@ def test_create_user_with_modalities(client):
         'email': 'tst@tst.com',
         'password': 'tst_secret',
         'user_type': 'client',
-        'modalities': ['capoeira', 'jiu-jitsu'],
+        'modalities': ['capoeira'],
     }
     response = client.post(
         '/users/',

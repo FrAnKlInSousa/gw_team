@@ -38,7 +38,7 @@ async def create_user(user: UserSchema, session: T_Session):
         )
 
     modalities_obj = await session.scalars(
-        select(Modality).where(Modality.name.in_(user.modalities))
+        select(Modality).where(Modality.modality_name.in_(user.modalities))
     )
 
     modalities = modalities_obj.all()
