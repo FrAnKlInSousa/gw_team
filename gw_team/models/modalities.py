@@ -10,6 +10,7 @@ class Modality:
     __tablename__ = 'modalities'
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
+    period: Mapped[str] = mapped_column(default='noturno')
     users_assoc: Mapped[List['UserModality']] = relationship(  # noqa: F821
         back_populates='modality',
         cascade='all, delete-orphan',
