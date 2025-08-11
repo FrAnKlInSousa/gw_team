@@ -8,7 +8,7 @@ class User(BaseModel):
     last_name: str
     email: EmailStr
     user_type: UserType
-    modalities: list[str]
+    modalities: list[str] = Field(alias='modalities')
 
 
 class UserPublic(BaseModel):
@@ -17,7 +17,9 @@ class UserPublic(BaseModel):
     last_name: str
     email: EmailStr
     user_type: UserType
-    modalities: list[str] = Field(alias='modality_names')
+    modalities: list[str] = Field(
+        alias='modalities', serialization_alias='modalities'
+    )
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
@@ -28,7 +30,7 @@ class UserSchema(User):
 
 class UserList(BaseModel):
     users: list[UserPublic]
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class UpdateUser(BaseModel):
