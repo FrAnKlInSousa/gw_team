@@ -12,14 +12,7 @@ def test_read_user(client, user, token):
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'name': user.name,
-        'last_name': user.last_name,
-        'id': user.id,
-        'email': user.email,
-        'user_type': user.user_type.value,
-        'modalities': [],
-    }
+    assert response.json() == UserPublic.model_validate(user).model_dump()
 
 
 def test_read_user_not_found(client, token_admin):
