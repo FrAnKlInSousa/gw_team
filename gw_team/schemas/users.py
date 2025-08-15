@@ -1,9 +1,9 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from gw_team.models.models import UserType
+from gw_team.enums import UserType
 
 
-class User(BaseModel):
+class UserBase(BaseModel):
     name: str
     last_name: str
     email: EmailStr
@@ -24,7 +24,7 @@ class UserPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
-class UserSchema(User):
+class UserCreate(UserBase):
     password: str
 
 
