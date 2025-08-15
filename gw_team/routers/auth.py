@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from gw_team.database import db_session
 from gw_team.models.models import User
 from gw_team.schemas.auth import Token
-from gw_team.security import create_token, is_valid_password
+from gw_team.security.token import create_token, is_valid_password
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 T_Session = Annotated[AsyncSession, Depends(db_session)]
