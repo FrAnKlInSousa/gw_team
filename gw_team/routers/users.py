@@ -8,17 +8,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from gw_team.database import db_session
-from gw_team.models.models import Modality, User, UserModality
+from gw_team.databasee import users
+from gw_team.models.models import User, UserModality
 from gw_team.schemas.filters import FilterUser
 from gw_team.schemas.schemas import Message
 from gw_team.schemas.users import (
     UpdatePassword,
     UpdateUser,
+    UserCreate,
     UserList,
     UserPublic,
-    UserSchema,
 )
-from gw_team.security import current_user, hash_password
+from gw_team.security.security import current_user
+from gw_team.security.token import hash_password
 
 router = APIRouter(prefix='/users', tags=['usuários'])
 
@@ -28,49 +30,8 @@ T_CurrentUser = Annotated[User, Depends(current_user)]
 
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-async def create_user(user: UserSchema, session: T_Session):
-    user_db = await session.scalar(
-        select(User).where(User.email == user.email)
-    )
-    if user_db:
-        raise HTTPException(
-            status_code=HTTPStatus.CONFLICT, detail='email já existe.'
-        )
-
-    modalities_obj = await session.scalars(
-        select(Modality).where(Modality.modality_name.in_(user.modalities))
-    )
-
-    modalities = modalities_obj.all()
-
-    user_db = User(
-        name=user.name,
-        email=user.email,
-        password=hash_password(user.password),
-        last_name=user.last_name,
-        user_type=user.user_type,
-    )
-    for modality in modalities:
-        assoc = UserModality(
-            user=user_db,
-            modality=modality,
-            start_date=datetime.now(),
-        )
-        user_db.modalities_assoc.append(assoc)
-
-    session.add(user_db)
-    await session.commit()
-    await session.refresh(user_db)
-    await session.execute(
-        select(User)
-        .where(User.id == user_db.id)
-        .options(
-            selectinload(User.modalities_assoc).selectinload(
-                UserModality.modality
-            )
-        )
-    )
-
+async def create_user(user: UserCreate, session: T_Session):
+    user_db = await users.create(user, session)
     return UserPublic.model_validate(user_db)
 
 
