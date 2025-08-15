@@ -7,7 +7,7 @@ from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from gw_team.database import db_session
+from gw_team.database.engine import db_session
 from gw_team.models.models import User
 from gw_team.settings import Settings
 

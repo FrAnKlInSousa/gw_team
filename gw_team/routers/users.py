@@ -1,4 +1,3 @@
-from datetime import datetime
 from http import HTTPStatus
 from typing import Annotated
 
@@ -7,8 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from gw_team.database import db_session
-from gw_team.databasee import users
+from gw_team.database import users
+from gw_team.database.engine import db_session
 from gw_team.models.models import User, UserModality
 from gw_team.schemas.filters import FilterUser
 from gw_team.schemas.schemas import Message

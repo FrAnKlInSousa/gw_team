@@ -1,18 +1,15 @@
+from datetime import datetime
+from typing import List
+
+from sqlalchemy import ForeignKey, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import registry
+from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 
 from gw_team.enums import UserType
 from gw_team.schemas.users import UserCreate
 from gw_team.security.token import hash_password
 
 table_registry = registry()
-
-
-from datetime import datetime
-from typing import List
-
-from sqlalchemy import ForeignKey, func, select
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 @table_registry.mapped_as_dataclass
