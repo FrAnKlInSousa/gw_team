@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from gw_team.models.users import UserType
+from gw_team.models.models import UserType
 
 
 class User(BaseModel):
