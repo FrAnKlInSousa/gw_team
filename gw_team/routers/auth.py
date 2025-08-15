@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from gw_team.database import db_session
-from gw_team.models.users import User
+from gw_team.models.models import User
 from gw_team.schemas.auth import Token
 from gw_team.security import create_token, is_valid_password
 

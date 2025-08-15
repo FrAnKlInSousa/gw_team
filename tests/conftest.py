@@ -11,8 +11,7 @@ from testcontainers.postgres import PostgresContainer
 
 from gw_team.app import app
 from gw_team.database import db_session
-from gw_team.models.modalities import Modality
-from gw_team.models.users import User, UserType, table_registry
+from gw_team.models.models import Modality, User, UserType, table_registry
 from gw_team.security import hash_password
 from gw_team.settings import Settings
 

@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.exc import DataError, PendingRollbackError
 
-from gw_team.models.users import User
+from gw_team.models.models import User
 
 
 @pytest.mark.asyncio
