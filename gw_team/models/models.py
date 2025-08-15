@@ -1,6 +1,9 @@
-from enum import Enum
-
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import registry
+
+from gw_team.enums import UserType
+from gw_team.schemas.users import UserCreate
+from gw_team.security.token import hash_password
 
 table_registry = registry()
 
@@ -8,7 +11,7 @@ table_registry = registry()
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey, func, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
@@ -45,11 +48,6 @@ class UserModality:
     modality: Mapped['Modality'] = relationship(back_populates='users_assoc')  # noqa: F821
 
 
-class UserType(str, Enum):
-    admin = 'admin'
-    client = 'client'
-
-
 @table_registry.mapped_as_dataclass
 class User:
     __tablename__ = 'users'
@@ -79,22 +77,29 @@ class User:
             assoc.modality.modality_name for assoc in self.modalities_assoc
         ]
 
-    # @classmethod
-    # async def from_schema(cls, user_schema: UserCreate, session: AsyncSession) -> 'User':
-    #     modalities = await session.scalar(
-    #         select(Modality).where(Modality.modality_name.in_(user_schema.modalities))
-    #     )
-    #
-    #     return cls(
-    #         name=user_schema.name,
-    #         email=user_schema.email,
-    #         password=hash_password(user_schema.password),
-    #         last_name=user_schema.last_name,
-    #         user_type=user_schema.user_type,
-    #         modalities_assoc=[
-    #             UserModality(
-    #                 modality=modality,
-    #                 start_date=datetime.now()
-    #             ) for modality in modalities
-    #         ]
-    #     )
+    @classmethod
+    async def from_schema(
+        cls, user_schema: UserCreate, session: AsyncSession
+    ) -> 'User':
+        modalities_obj = await session.scalars(
+            select(Modality).where(
+                Modality.modality_name.in_(user_schema.modalities)
+            )
+        )
+        modalities = modalities_obj.all()
+
+        user = cls(
+            name=user_schema.name,
+            email=str(user_schema.email),
+            password=hash_password(user_schema.password),
+            last_name=user_schema.last_name,
+            user_type=user_schema.user_type,
+            modalities_assoc=[],
+        )
+        now = datetime.now()
+        user.modalities_assoc.extend([
+            UserModality(modality=modality, user=user, start_date=now)
+            for modality in modalities
+        ])
+
+        return user
