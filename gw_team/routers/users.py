@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from gw_team.database import db_session
-from gw_team.models import Modality, User, UserModality
+from gw_team.models.models import Modality, User, UserModality
 from gw_team.schemas.filters import FilterUser
 from gw_team.schemas.schemas import Message
 from gw_team.schemas.users import (
