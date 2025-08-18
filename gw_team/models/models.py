@@ -100,3 +100,7 @@ class User:
         ])
 
         return user
+
+    @property
+    def is_admin(self) -> bool:
+        return self.user_type.value == 'admin'
