@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import List
 
-from sqlalchemy import ForeignKey, func, select
+from sqlalchemy import Date, ForeignKey, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 
@@ -19,6 +19,11 @@ class Modality:
     modality_name: Mapped[str]
     period: Mapped[str] = mapped_column(default='noturno')
     users_assoc: Mapped[List['UserModality']] = relationship(  # noqa: F821
+        back_populates='modality',
+        cascade='all, delete-orphan',
+        default_factory=list,
+    )
+    appointments: Mapped[List['Appointment']] = relationship(
         back_populates='modality',
         cascade='all, delete-orphan',
         default_factory=list,
@@ -66,6 +71,11 @@ class User:
         cascade='all, delete-orphan',
         default_factory=list,
     )
+    appointments: Mapped[List['Appointment']] = relationship(
+        back_populates='user',
+        cascade='all, delete-orphan',
+        default_factory=list,
+    )
     disabled: Mapped[bool] = mapped_column(default=False)
 
     @property
@@ -104,3 +114,21 @@ class User:
     @property
     def is_admin(self) -> bool:
         return self.user_type.value == 'admin'
+
+
+@table_registry.mapped_as_dataclass
+class Appointment:
+    __tablename__ = 'appointments'
+
+    date: Mapped[date] = mapped_column(Date())
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    modality_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            'modalities.id',
+        )
+    )
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    user: Mapped['User'] = relationship(back_populates='appointments')
+    modality: Mapped['Modality'] = relationship(back_populates='appointments')
