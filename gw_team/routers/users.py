@@ -1,14 +1,14 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from gw_team.database import users
 from gw_team.database.engine import db_session
-from gw_team.models.models import User, UserModality
+from gw_team.database.users import find_users
+from gw_team.models.models import User
+from gw_team.permissions import check_admin_permission, check_permission
 from gw_team.schemas.filters import FilterUser
 from gw_team.schemas.schemas import Message
 from gw_team.schemas.users import (
@@ -19,7 +19,6 @@ from gw_team.schemas.users import (
     UserPublic,
 )
 from gw_team.security.security import current_user
-from gw_team.security.token import hash_password
 
 router = APIRouter(prefix='/users', tags=['usuários'])
 
@@ -36,23 +35,9 @@ async def create_user(user: UserCreate, session: T_Session):
 
 @router.get('/{user_id}', response_model=UserPublic)
 async def read_user(user_id: int, session: T_Session, user: T_CurrentUser):
-    if user.id != user_id and user.user_type != 'admin':
-        raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN, detail='You have no permission'
-        )
-    user_db = await session.scalar(
-        select(User)
-        .where(User.id == user_id)
-        .options(
-            selectinload(User.modalities_assoc).selectinload(
-                UserModality.modality
-            )
-        )
-    )
-    if not user_db:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
-        )
+    await check_permission(user, user_id)
+    user_db = await users.find_user_by_id(user_id, session)
+
     return UserPublic.model_validate(user_db)
 
 
@@ -60,20 +45,12 @@ async def read_user(user_id: int, session: T_Session, user: T_CurrentUser):
 async def read_users(
     session: T_Session, filter_users: T_Filter, user: T_CurrentUser
 ):
-    if user.user_type != 'admin':
-        raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN, detail='You have no permission'
-        )
-    query = select(User).options(
-        selectinload(User.modalities_assoc).selectinload(UserModality.modality)
+    await check_admin_permission(user)
+    users_list = await find_users(filter_users, session)
+
+    return UserList(
+        users=[UserPublic.model_validate(user) for user in users_list]
     )
-    if filter_users.name:
-        query = query.filter(User.name.contains(filter_users.name))
-    result = await session.scalars(
-        query.limit(filter_users.limit).offset(filter_users.page)
-    )
-    users = result.all()
-    return UserList(users=[UserPublic.model_validate(user) for user in users])
 
 
 @router.patch('/{user_id}', response_model=UserPublic)
@@ -84,41 +61,9 @@ async def update(
     data: UpdateUser,
 ):
     # todo permite mudar email? apenas admin? melhor nao.. pensar sobre
-    if auth_user.user_type != 'admin' and user_id != auth_user.id:
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
-            detail='You have no permission',
-        )
-    user_db = await session.scalar(
-        select(User)
-        .where(User.id == user_id)
-        .options(
-            selectinload(User.modalities_assoc).selectinload(
-                UserModality.modality
-            )
-        )
-    )
+    await check_permission(auth_user, user_id)
+    user_db = await users.update(user_id, data, session)
 
-    if not user_db:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
-        )
-    update_data = data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(user_db, key, value)
-
-    session.add(user_db)
-    await session.commit()
-    await session.refresh(user_db)
-    user_db = await session.scalar(
-        select(User)
-        .where(User.id == user_id)
-        .options(
-            selectinload(User.modalities_assoc).selectinload(
-                UserModality.modality
-            )
-        )
-    )
     return UserPublic.model_validate(user_db)
 
 
@@ -129,39 +74,15 @@ async def update_password(
     session: T_Session,
     data: UpdatePassword,
 ):
-    if auth_user.user_type != 'admin' and user_id != auth_user.id:
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
-            detail='You have no permission',
-        )
-
-    user_db = await session.scalar(select(User).where(User.id == user_id))
-    if not user_db:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
-        )
-
-    user_db.password = hash_password(data.new_password)
-
-    session.add(user_db)
-    await session.commit()
+    await check_permission(auth_user, user_id)
+    await users.update_password(user_id, session, data.new_password)
 
     return Message(message='Password changed successfully')
 
 
 @router.delete('/{user_id}', response_model=Message)
 async def delete_user(user_id: int, user: T_CurrentUser, session: T_Session):
-    if user.id != user_id and user.user_type != 'admin':
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
-            detail='You have no permission',
-        )
-    user_db = await session.scalar(select(User).where(User.id == user_id))
-    if not user_db:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
-        )
-    user_db.disabled = True
-    session.add(user_db)
-    await session.commit()
+    await check_permission(user, user_id)
+    await users.delete_user(user_id, session)
+
     return Message(message='User successfully deleted')
