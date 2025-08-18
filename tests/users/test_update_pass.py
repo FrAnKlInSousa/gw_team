@@ -30,7 +30,7 @@ def test_update_other_user_password(client, header_client):
         headers=header_client,
         json={'new_password': 'new_pass'},
     )
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_update_other_user_password_with_admin(client, header_admin, user):

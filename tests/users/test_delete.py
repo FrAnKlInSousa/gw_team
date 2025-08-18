@@ -21,5 +21,5 @@ def test_delete_other_user_as_admin(client, user, header_admin):
 
 def test_delete_other_user_as_client(client, header_client):
     response = client.delete('/users/0', headers=header_client)
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.status_code == HTTPStatus.FORBIDDEN
     assert response.json() == {'detail': 'You have no permission'}

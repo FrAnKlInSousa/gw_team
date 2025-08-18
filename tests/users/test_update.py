@@ -26,4 +26,4 @@ def test_update_user_not_found(client, header_admin):
 
 def test_update_other_user_error(client, header_client):
     response = client.patch('/users/0', headers=header_client, json={})
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.status_code == HTTPStatus.FORBIDDEN
