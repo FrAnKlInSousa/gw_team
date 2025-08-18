@@ -34,6 +34,7 @@ async def test_create_user(mock_db_time, session):
             'updated_at': time,
             'disabled': False,
             'modalities_assoc': [],
+            'appointments': [],
         }
 
 
