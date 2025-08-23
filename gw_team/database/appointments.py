@@ -14,9 +14,7 @@ async def create(
     modality = result.scalar_one_or_none()
 
     if not modality:
-        raise HTTPException(
-            status_code=404, detail='Modality not found'
-        )
+        raise HTTPException(status_code=404, detail='Modality not found')
     my_appointment = Appointment(
         date=appointment.date,
         user_id=user_id,
