@@ -21,9 +21,10 @@ def client(session, add_modalities_to_db):
     def get_session_override():
         return session
 
-    with TestClient(app) as client:
-        app.dependency_overrides[db_session] = get_session_override
-        yield client
+    app.dependency_overrides[db_session] = get_session_override
+
+    with TestClient(app) as test_client:
+        yield test_client
     app.dependency_overrides.clear()
 
 
