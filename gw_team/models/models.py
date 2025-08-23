@@ -123,12 +123,15 @@ class Appointment:
     date: Mapped[date] = mapped_column(Date())
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    modality_id: Mapped[int] = mapped_column(
-        ForeignKey(
-            'modalities.id',
-        )
-    )
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    modality_id: Mapped[int] = mapped_column(ForeignKey('modalities.id'))
 
-    user: Mapped['User'] = relationship(back_populates='appointments')
-    modality: Mapped['Modality'] = relationship(back_populates='appointments')
+    user: Mapped['User'] = relationship(
+        back_populates='appointments', lazy='raise', init=False
+    )
+    modality: Mapped['Modality'] = relationship(
+        back_populates='appointments', lazy='raise', init=False
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
