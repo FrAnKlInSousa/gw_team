@@ -27,7 +27,7 @@ async def create_schedule(
 
 @router.get('/', response_model=AppointmentList)
 async def list_appointments(user: T_CurrentUser, session: T_Session):
-    my_appointments = await appointments.get_appointments(
+    my_appointments = await appointments.list_appointments(
         session=session, user=user
     )
     return {'appointments': my_appointments}
