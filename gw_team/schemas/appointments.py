@@ -11,8 +11,8 @@ class AppointmentSchema(BaseModel):
 
 class AppointmentPublic(BaseModel):
     date: date
-    modality_id: int
-    user_id: int
+    modality_name: str
+    period: str
 
     model_config = ConfigDict(from_attributes=True)
 
