@@ -1,6 +1,7 @@
 from datetime import date
+from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class AppointmentSchema(BaseModel):
@@ -13,5 +14,8 @@ class AppointmentPublic(BaseModel):
     modality_id: int
     user_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AppointmentList(BaseModel):
+    appointments: List[AppointmentPublic]
