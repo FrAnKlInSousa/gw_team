@@ -30,16 +30,53 @@ async def create(
     await session.commit()
 
 
+# async def list_appointments(
+#     session: AsyncSession, user: User
+# ) -> List[AppointmentPublic]:
+#     old_statement = select(Appointment).where(
+#         Appointment.user_id == user.id, Appointment.date >= date.today()
+#     )
+#     statement = (
+#         select(Appointment, Modality.modality_name)
+#         .join(Modality, Appointment.modality_id == Modality.id)
+#         .where(
+#             Appointment.user_id == user.id, Appointment.date >= date.today()
+#         )
+#     )
+#     appointments_obj = await session.scalars(statement)
+#     my_appointments = appointments_obj.all()
+#     # result = [
+#     #     AppointmentPublic.model_validate(appointment)
+#     #     for appointment in my_appointments
+#     # ]
+#     result = []
+#     for appointment, modality_name in my_appointments:
+#         appointment_data = AppointmentPublic.model_validate(appointment)
+#         appointment_data.modality_name = modality_name
+#         result.append(appointment_data)
+#     return result
+
+
 async def list_appointments(
     session: AsyncSession, user: User
 ) -> List[AppointmentPublic]:
-    statement = select(Appointment).where(
-        Appointment.user_id == user.id, Appointment.date >= date.today()
+    statement = (
+        select(
+            Appointment.date,
+            Modality.modality_name,
+            Modality.period,
+        )
+        .join(Modality, Appointment.modality_id == Modality.id)
+        .where(
+            Appointment.user_id == user.id, Appointment.date >= date.today()
+        )
+        .order_by(Appointment.date.asc())
     )
-    appointments_obj = await session.scalars(statement)
-    my_appointments = appointments_obj.all()
-    result = [
+
+    results = await session.execute(statement)
+    appointments = results.all()
+
+    return [
         AppointmentPublic.model_validate(appointment)
-        for appointment in my_appointments
+        for appointment in appointments
     ]
-    return result
