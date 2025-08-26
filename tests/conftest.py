@@ -102,16 +102,6 @@ async def user(session: AsyncSession) -> User:
     return new_user
 
 
-@pytest_asyncio.fixture
-async def other_user(session: AsyncSession) -> User:
-    password = 'secret'
-    new_user = UserFactory(password=hash_password(password))
-    session.add(new_user)
-    await session.commit()
-    await session.refresh(new_user)
-    new_user.clean_password = password
-    return new_user
-
 
 @pytest_asyncio.fixture
 async def user_admin(session: AsyncSession) -> User:
