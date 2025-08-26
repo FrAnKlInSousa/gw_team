@@ -21,7 +21,9 @@ class UserPublic(BaseModel):
         alias='modalities', serialization_alias='modalities'
     )
 
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    model_config = ConfigDict(
+        from_attributes=True, populate_by_name=True, use_enum_values=True
+    )
 
 
 class UserCreate(UserBase):
@@ -30,7 +32,9 @@ class UserCreate(UserBase):
 
 class UserList(BaseModel):
     users: list[UserPublic]
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    model_config = ConfigDict(
+        from_attributes=True, populate_by_name=True, use_enum_values=True
+    )
 
 
 class UpdateUser(BaseModel):
