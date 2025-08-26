@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import date, datetime
 
 import factory.fuzzy
 import pytest
@@ -11,7 +11,13 @@ from testcontainers.postgres import PostgresContainer
 
 from gw_team.app import app
 from gw_team.database.engine import db_session
-from gw_team.models.models import Modality, User, UserType, table_registry
+from gw_team.models.models import (
+    Appointment,
+    Modality,
+    User,
+    UserType,
+    table_registry,
+)
 from gw_team.security.token import hash_password
 from gw_team.settings import Settings
 
@@ -65,6 +71,27 @@ def mock_db_time():
 
 
 @pytest_asyncio.fixture
+async def make_user(session: AsyncSession):
+    async def _create_user(**kwargs):
+        default_values = {'password': 'secret', 'user_type': UserType.client}
+        default_values.update(kwargs)
+        password = default_values.pop('password')
+        new_user = UserFactory(password=hash_password(password), **kwargs)
+        session.add(new_user)
+        await session.commit()
+        await session.refresh(new_user)
+        new_user.clean_password = password
+        return new_user
+
+    def create_user(**kwargs):
+        import asyncio
+
+        return asyncio.run(_create_user(**kwargs))
+
+    return create_user
+
+
+@pytest_asyncio.fixture
 async def user(session: AsyncSession) -> User:
     password = 'secret'
     new_user = UserFactory(password=hash_password(password))
@@ -84,21 +111,6 @@ async def other_user(session: AsyncSession) -> User:
     await session.refresh(new_user)
     new_user.clean_password = password
     return new_user
-
-
-@pytest_asyncio.fixture
-async def custom_user(session: AsyncSession):
-    async def create_user(**kwargs) -> User:
-        new_user = UserFactory(**kwargs)
-        password = new_user.password
-        new_user.password = hash_password(password)
-        session.add(new_user)
-        await session.commit()
-        await session.refresh(new_user)
-        new_user.clean_password = password
-        return new_user
-
-    return create_user
 
 
 @pytest_asyncio.fixture
@@ -173,3 +185,21 @@ async def add_modalities_to_db(session: AsyncSession):
     await session.commit()
     result = await session.scalars(select(Modality))
     return result.all()
+
+
+class AppointmentFactory(factory.Factory):
+    class Meta:
+        model = Appointment
+
+    date = factory.LazyFunction(date.today)
+    modality_id = 0
+    user_id = 0
+
+
+@pytest_asyncio.fixture
+async def create_appointment(session: AsyncSession, user):
+    modalities_obj = await session.scalars(select(Modality))
+    modality = modalities_obj.first()
+    appointment = AppointmentFactory(modality_id=modality.id, user_id=user.id)
+    session.add(appointment)
+    await session.commit()
