@@ -196,7 +196,6 @@ class AppointmentFactory(factory.Factory):
 @pytest_asyncio.fixture(autouse=True)
 async def get_modalities(session: AsyncSession, add_modalities_to_db):
     modalities = (await session.scalars(select(Modality))).all()
-    print(f'\nget_modalities: {id(modalities)}\n')
 
     return modalities
 
