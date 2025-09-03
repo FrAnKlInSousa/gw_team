@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import factory.fuzzy
 import pytest
@@ -23,7 +23,7 @@ from gw_team.settings import Settings
 
 
 @pytest.fixture
-def client(session, add_modalities_to_db):
+def client(session):
     def get_session_override():
         return session
 
@@ -172,9 +172,10 @@ class UserFactory(factory.Factory):
 @pytest_asyncio.fixture
 async def add_modalities_to_db(session: AsyncSession):
     session.add_all([
-        Modality(modality_name='capoeira', period='diurno'),
-        Modality(modality_name='jiu-jitsu'),
-        Modality(modality_name='muay-thai', period='diurno'),
+        Modality(modality_name='capoeira', period='manhã'),
+        Modality(modality_name='jiu-jitsu', period='tarde'),
+        Modality(modality_name='karate', period='manhã'),
+        Modality(modality_name='muay-thai', period='noite'),
     ])
     await session.commit()
     result = await session.scalars(select(Modality))
@@ -185,15 +186,31 @@ class AppointmentFactory(factory.Factory):
     class Meta:
         model = Appointment
 
-    date = factory.LazyFunction(date.today)
-    modality_id = 0
-    user_id = 0
+    date = factory.fuzzy.FuzzyDate(
+        start_date=date.today(), end_date=date.today() + timedelta(days=60)
+    )
+    modality_id = 1
+    user_id = 1
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def get_modalities(session: AsyncSession, add_modalities_to_db):
+    modalities = (await session.scalars(select(Modality))).all()
+    print(f'\nget_modalities: {id(modalities)}\n')
+
+    return modalities
 
 
 @pytest_asyncio.fixture
-async def create_appointment(session: AsyncSession, user):
-    modalities_obj = await session.scalars(select(Modality))
-    modality = modalities_obj.first()
-    appointment = AppointmentFactory(modality_id=modality.id, user_id=user.id)
+async def random_modality_id(session: AsyncSession, get_modalities):
+    modality_ids = [modality.id for modality in get_modalities]
+    return factory.fuzzy.FuzzyChoice(modality_ids)
+
+
+@pytest_asyncio.fixture
+async def create_appointment(session: AsyncSession, user, random_modality_id):
+    appointment = AppointmentFactory(
+        modality_id=random_modality_id, user_id=user.id
+    )
     session.add(appointment)
     await session.commit()
