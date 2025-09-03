@@ -31,3 +31,9 @@ async def list_appointments(user: T_CurrentUser, session: T_Session):
         session=session, user=user
     )
     return {'appointments': my_appointments}
+
+
+@router.delete('/{appointment_id}', response_model=Message)
+async def delete_schedule(appointment_id: int, session: T_Session):
+    await appointments.cancel_appointment(appointment_id, session)
+    return Message(message='Appointment deleted successfully')

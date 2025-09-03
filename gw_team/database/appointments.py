@@ -30,33 +30,6 @@ async def create(
     await session.commit()
 
 
-# async def list_appointments(
-#     session: AsyncSession, user: User
-# ) -> List[AppointmentPublic]:
-#     old_statement = select(Appointment).where(
-#         Appointment.user_id == user.id, Appointment.date >= date.today()
-#     )
-#     statement = (
-#         select(Appointment, Modality.modality_name)
-#         .join(Modality, Appointment.modality_id == Modality.id)
-#         .where(
-#             Appointment.user_id == user.id, Appointment.date >= date.today()
-#         )
-#     )
-#     appointments_obj = await session.scalars(statement)
-#     my_appointments = appointments_obj.all()
-#     # result = [
-#     #     AppointmentPublic.model_validate(appointment)
-#     #     for appointment in my_appointments
-#     # ]
-#     result = []
-#     for appointment, modality_name in my_appointments:
-#         appointment_data = AppointmentPublic.model_validate(appointment)
-#         appointment_data.modality_name = modality_name
-#         result.append(appointment_data)
-#     return result
-
-
 async def list_appointments(
     session: AsyncSession, user: User
 ) -> List[AppointmentPublic]:
@@ -65,6 +38,7 @@ async def list_appointments(
             Appointment.date,
             Modality.modality_name,
             Modality.period,
+            Appointment.id,
         )
         .join(Modality, Appointment.modality_id == Modality.id)
         .where(
@@ -80,3 +54,15 @@ async def list_appointments(
         AppointmentPublic.model_validate(appointment)
         for appointment in appointments
     ]
+
+
+async def cancel_appointment(appointment_id: int, session: AsyncSession):
+    appointment = await session.scalar(
+        select(Appointment).where(Appointment.id == appointment_id)
+    )
+
+    if not appointment:
+        raise HTTPException(status_code=404, detail='Appointment not found')
+
+    await session.delete(appointment)
+    await session.commit()
