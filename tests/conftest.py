@@ -213,3 +213,5 @@ async def create_appointment(session: AsyncSession, user, random_modality_id):
     )
     session.add(appointment)
     await session.commit()
+    await session.refresh(appointment)
+    return appointment
